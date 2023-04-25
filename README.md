@@ -134,3 +134,32 @@ print(fm.log)
 [['examples/test-folder/2022-img.jpg', '_copy_'],
  ['examples/test-folder/2017-img.png', '_copy_']]
 ```
+
+
+## Scanner
+The scanner is used for scanning a directory and running a FileManager on its Contents. you can set the scanning level by the 'deep' argument. for e.g 'deep=1'  only searches subfolders of the main path and if set 'deep=0' it searches only the main path content without scanning its subfolder
+
+### example
+let's scan a folder and copy its images to a specific folder
+#### step1:
+first, we define our condition function and File Manager like before:
+
+```python
+import diskManager
+from diskManager import FileCondition, FileManager, FileAction, Scanner
+
+def be_image(file:diskManager.File):
+    be_image = FileCondition.file_extention('in', ['jpg', 'png'])
+    return be_image(file)
+
+fm = FileManager()
+fm.add_operation( condition = be_image,
+                  true_action = FileAction.copy('examples\\test-folder\\images only'))
+```
+#### step2:
+now we define a scanner and run it on a specific directory
+```python
+my_scanner = Scanner(fm)
+my_scanner.scan(path='examples\\test-folder', deep=0)
+```
+now all images that are directly in 'examples\\test-folder' ( not in subfolders because of deep=0 ) would be copied into 'examples\\test-folder\\images only'
