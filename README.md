@@ -44,3 +44,42 @@ all method in parms are:
 * creation_date() -> date that file or folder created
 * size() -> file size, for folder it calculated sumb of all sub files and sub folders
 * lifetime() -> age of file from now
+
+
+## fileManager
+fileManager do actions like copy file when some condition happend. to use this class, you need define your custom condition function that get a fileManager instance  as input and return True when your Ideal conditions happend. you can also use some predefined condition. let look at this example:
+in this example we want remove a file, if it is an image
+
+### step1:
+define your condition function. you can use pre defineds 
+``` python
+import diskManager
+from diskManager import FileCondition, FileManager, FileAction, File
+
+def mycustom_condition(file:diskManager.File):
+    be_image = FileCondition.file_extention('in', ['jpg', 'png'])
+    # you can Also Write
+    #       be_image = FileCondition.file_extention(diskManager.Conditions.contain, ['jpg', 'png'])
+    
+    return be_image(file)#it return True if condition occurd
+```
+### step2:
+define your fileManager. you can add multiple operation with diffrents Action and condition 
+``` python
+# build your file manager
+fm = FileManager()
+fm.add_operation( mycustom_condition, FileAction.delete())
+```
+
+### step3:
+run your fileManager on your files
+``` python
+#-----------------------
+#load your file
+myfile = diskManager.File('examples/test-folder\steve-jobs-black-and-white.jpg')
+#-----------------------
+#do your operations on your file
+fm.set_file(myfile)
+fm.run()
+
+```
