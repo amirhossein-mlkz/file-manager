@@ -183,6 +183,7 @@ class FileAction:
 #____________________________________________________________________________________________________________________________________
 class File:    
     def __init__(self, path):
+        assert os.path.exists(path), f'ERROR: path {path} not exist'
         self.path = path
         self.parms = fileParms(self.path)
 
@@ -201,19 +202,25 @@ class FileManager:
     def set_file(self, file:File):
         self.file = file
 
-    def add_operation(self, condition, action ):
-        opr = {'condition':condition, 'action':action}
+    def add_operation(self, condition, true_action=None, false_action=None ):
+        opr = {'condition':condition, 'true_action':true_action, 'false_action':false_action}
         self.operations.append(opr)
     
     def run(self, log=True):
         assert self.file is not None, 'set a file before run'
         for opr in self.operations:
             if opr['condition'](self.file):
-                opr['action'](self.file)
-                
-                if log:
-                    self.log.append([self.file.parms.path(), opr['action'].__name__ ])
+                if opr['true_action']:
+                    opr['true_action'](self.file)
+                    if log:
+                        self.log.append([self.file.parms.path(), opr['true_action'].__name__ ])
                 return True
+            else:
+                if opr['false_action']:
+                    opr['false_action'](self.file)
+                    if log:
+                        self.log.append([self.file.parms.path(), opr['false_action'].__name__ ])
+
         return False
 
 
@@ -288,6 +295,8 @@ class Conditions:
 
 
 CONDITIONS = {
+        '>': Conditions.bigger,
+        '<': Conditions.samaller,
         '>=': Conditions.bigger_and_equal,
         '<=': Conditions.samaller_and_equal,
         '==': Conditions.equal,
@@ -460,43 +469,43 @@ class Scanner:
 #
 #
 #____________________________________________________________________________________________________________________________________
-class myProjectConditions:
+# class myProjectConditions:
 
-    def __init__(self):
-        self.be_folder = FileCondition.file_extention('==', '')
-        self.be_image = FileCondition.file_extention('in', ['jpg', 'png', 'jpeg'])
-        self.name_older = FileCondition.file_name('>=', 2022, int)
-        self.numberic_name = FileCondition.is_file_name_numeric()
+#     def __init__(self):
+#         self.be_folder = FileCondition.file_extention('==', '')
+#         self.be_image = FileCondition.file_extention('in', ['jpg', 'png', 'jpeg'])
+#         self.name_older = FileCondition.file_name('>=', 2022, int)
+#         self.numberic_name = FileCondition.is_file_name_numeric()
 
-    def condition_date_folder(self,file:File):
-            if self.be_folder(file) and self.numberic_name(file) :
-                if self.name_older(file):
-                    return True
-                return False
-            return False
+#     def condition_date_folder(self,file:File):
+#             if self.be_folder(file) and self.numberic_name(file) :
+#                 if self.name_older(file):
+#                     return True
+#                 return False
+#             return False
     
-    def condition_img(self, file:File):
-        if self.be_image(file):
-            return True
-        return False
+#     def condition_img(self, file:File):
+#         if self.be_image(file):
+#             return True
+#         return False
     
 
-def my_scan_file_calback(f):
-    print('Scanning:', f)
+# def my_scan_file_calback(f):
+#     print('Scanning:', f)
 
 
-#-------custom for yourself ----------
-my_cond = myProjectConditions()
+# #-------custom for yourself ----------
+# my_cond = myProjectConditions()
 
-#dm = diskMemory('c:\\')
-main_path = 'files'
-fm = FileManager()
-fm.add_operation(my_cond.condition_date_folder, FileAction.delete())
-#----------------
-scanner = Scanner(fm)
-#scanner.set_scan_file_calback(my_scan_file_calback)
-scanner.scan(main_path, deep=3)
+# #dm = diskMemory('c:\\')
+# main_path = 'files'
+# fm = FileManager()
+# fm.add_operation(my_cond.condition_date_folder, FileAction.delete())
+# #----------------
+# scanner = Scanner(fm)
+# #scanner.set_scan_file_calback(my_scan_file_calback)
+# scanner.scan(main_path, deep=3)
 
 
-print( scanner.count_items(main_path, deep=100))
-print( scanner.advanced_count_items(main_path, deep=100, condition=my_cond.be_image) )
+# print( scanner.count_items(main_path, deep=100))
+# print( scanner.advanced_count_items(main_path, deep=100, condition=my_cond.be_image) )
